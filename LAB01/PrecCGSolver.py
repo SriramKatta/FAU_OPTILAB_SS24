@@ -64,8 +64,8 @@ def PrecCGSolver(A: np.array, b: np.array, delta=1.0e-6, verbose=0):
         d_j = -LLT.LLTSolver(L, r_j) + beta_j * d_j
 
     # INCOMPLETE CODE ENDS
-    x = np.copy(x_j)
+
     if verbose:
         print('precCGSolver terminated after ', countIter, ' steps with norm of residual being ', np.linalg.norm(r_j))
 
-    return x
+    return x_j
