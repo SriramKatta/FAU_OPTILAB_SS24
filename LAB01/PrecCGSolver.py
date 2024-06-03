@@ -54,6 +54,7 @@ def PrecCGSolver(A: np.array, b: np.array, delta=1.0e-6, verbose=0):
     # INCOMPLETE CODE STARTS
     d_j = -LLT.LLTSolver(L, r_j)
     while np.linalg.norm(r_j) > delta:
+        countIter += 1
         d_j_tilde = A @ d_j
         rho_j = d_j.T @ d_j_tilde
         t_j = r_j.T @ LLT.LLTSolver(L, r_j) / rho_j
@@ -62,6 +63,7 @@ def PrecCGSolver(A: np.array, b: np.array, delta=1.0e-6, verbose=0):
         r_j = r_old + t_j * d_j_tilde
         beta_j = r_j.T @ LLT.LLTSolver(L, r_j) / (r_old.T @ LLT.LLTSolver(L, r_old))
         d_j = -LLT.LLTSolver(L, r_j) + beta_j * d_j
+
 
     # INCOMPLETE CODE ENDS
 
