@@ -50,7 +50,7 @@ import numpy as np
 
 def matrnr():
     # set your matriculation number here
-    matrnr = 0
+    matrnr = 23322375
     return matrnr
 
 
@@ -79,9 +79,39 @@ def WolfePowellSearch(f, x: np.array, d: np.array, sigma=1.0e-3, rho=1.0e-2, ver
         isWP2 = gradft.T @ d >= rho*descent
         return isWP2
 
-    t = 1
     # INCOMPLETE CODE STARTS
+    if gradx.T @ d >= 0:
+        raise TypeError('descent direction check failed!')
+    
+    t = 1
+    t_minus = 0
+    t_plus = 0
+    t_star = None
+    
+    if WP1(f.objective(x+t*d), t) == False:
+        t = t/2
+        while WP1(f.objective(x + t*d), t) == False:
+            t = t/2
+        t_minus = t
+        t_plus = 2*t
+    elif WP2(f.gradient(x + t*d)) == True:
+        t_star = t
+        return t_star
+    else :
+        t = 2*t
+        while WP1(f.objective(x+t*d), t) == False:
+            t = 2*t
+        t_minus = t/2
+        t_plus = t
 
+    t = t_minus
+    while WP2(f.gradient(x + t*d)) == False:
+        t = (t_minus + t_plus)/2
+        if WP1(f.objective(x + t*d),t) == True:
+            t_minus = t
+        else:
+            t_plus = t
+    t_star = t_minus
     # INCOMPLETE CODE ENDS
 
     if verbose:
@@ -91,4 +121,4 @@ def WolfePowellSearch(f, x: np.array, d: np.array, sigma=1.0e-3, rho=1.0e-2, ver
         print('WolfePowellSearch terminated with t=', t)
         print('Wolfe-Powell: ', fxt, '<=', fx+t*sigma*descent, ' and ', gradxt.T @ d, '>=', rho*descent)
 
-    return t
+    return t_star
