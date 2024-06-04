@@ -46,6 +46,7 @@
 # should return t=0.25
 
 import numpy as np
+from copy import copy
 
 
 def matrnr():
@@ -83,26 +84,22 @@ def WolfePowellSearch(f, x: np.array, d: np.array, sigma=1.0e-3, rho=1.0e-2, ver
     if gradx.T @ d >= 0:
         raise TypeError('descent direction check failed!')
     
-    t = 1
-    t_minus = 0
-    t_plus = 0
-    t_star = None
-    
+    t = 1    
     if WP1(f.objective(x+t*d), t) == False:
         t = t/2
         while WP1(f.objective(x + t*d), t) == False:
             t = t/2
-        t_minus = t
+        t_minus = copy(t)
         t_plus = 2*t
     elif WP2(f.gradient(x + t*d)) == True:
-        t_star = t
+        t_star = copy(t)
         return t_star
     else :
         t = 2*t
-        while WP1(f.objective(x+t*d), t) == False:
+        while WP1(f.objective(x+t*d), t) == True:
             t = 2*t
         t_minus = t/2
-        t_plus = t
+        t_plus = copy(t)
 
     t = t_minus
     while WP2(f.gradient(x + t*d)) == False:
@@ -111,7 +108,7 @@ def WolfePowellSearch(f, x: np.array, d: np.array, sigma=1.0e-3, rho=1.0e-2, ver
             t_minus = t
         else:
             t_plus = t
-    t_star = t_minus
+    t_star = copy(t_minus)
     # INCOMPLETE CODE ENDS
 
     if verbose:
