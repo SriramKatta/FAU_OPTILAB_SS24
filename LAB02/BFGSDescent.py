@@ -50,8 +50,18 @@ def BFGSDescent(f, x0: np.array, eps=1.0e-3, verbose=0):
     Bk = E
     # INCOMPLETE CODE STARTS
     while np.linalg.norm(f.gradient(xk)) > eps:
-        dk = -Bk @ f.gradient(xk)
-        if 
+        countIter = countIter + 1
+        gradxk = f.gradient(xk)
+        dk = -Bk @ gradxk
+        if gradxk.T @ dk >= 0:
+            dk = -gradxk
+            Bk = E
+        tk = WP.WolfePowellSearch(f,xk, dk)
+        del_gk = f.gradient(xk + tk*dk) - gradxk
+        del_xk = tk * dk
+        xk = xk + tk*dk
+        if del_gk.T @ del_xk <= 0 :
+            bk = E
 
     # INCOMPLETE CODE ENDS
     if verbose:
