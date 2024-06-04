@@ -53,11 +53,17 @@ def projectedBacktrackingSearch(f, P, x: np.array, d: np.array, sigma=1.0e-4, ve
     if verbose:
         print('Start projectedBacktrackingSearch...')
 
+    # INCOMPLETE CODE STARTS
+    def W1(x, t):
+        isW1t = f.objective(P.project(x+t*d)) <= \
+            f.objective(x) - (sigma/t) * np.square(np.linalg.norm(x - P.project(x - t*f.gradient(x))))
+        return isW1t
+        
     beta = 0.5
     t = 1
-    # INCOMPLETE CODE STARTS
-
-
+    while W1(x, t) == False:
+        t = t/2
+    
     # INCOMPLETE CODE ENDS
 
     if verbose:
