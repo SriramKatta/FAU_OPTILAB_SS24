@@ -51,18 +51,18 @@ def projectedInexactNewtonCG(f, P, x0: np.array, eps=1.0e-3, verbose=0):
 
     # INCOMPLETE CODE STARTS
     countIter = 0
-    xk = P.project(x0)
-    eps_check = np.linalg.norm(xk - P.project(xk - f.gradient(xk)))
-    diff = np.sqrt(np.linalg.norm(xk - P.project(xk - f.gradient(xk))))
+    x_k = P.project(x0)
+    eps_check = np.linalg.norm(x_k - P.project(x_k - f.gradient(x_k)))
+    diff = np.sqrt(np.linalg.norm(x_k - P.project(x_k - f.gradient(x_k))))
     eta_k = np.min((0.5, diff)) * eps_check
     curvaturefail = False
     while eps_check > eps:
         countIter = countIter + 1
-        x_j = xk
-        r_j = f.gradient(xk)
+        x_j = x_k
+        r_j = f.gradient(x_k)
         d_j = -r_j
         while np.linalg.norm(r_j) > eta_k:
-            d_a = PHA.projectedHessApprox(f, P, xk, d_j)
+            d_a = PHA.projectedHessApprox(f, P, x_k, d_j)
             rho_j = d_j.T @ d_a
             if rho_j <= eps * np.square(np.linalg.norm(d_j)):
                 curvaturefail = True
@@ -74,19 +74,19 @@ def projectedInexactNewtonCG(f, P, x0: np.array, eps=1.0e-3, verbose=0):
             beta_j = np.square(np.linalg.norm(r_j)/np.linalg.norm(r_old))
             d_j = -r_j + beta_j * d_j
         if curvaturefail:
-            d_k = -f.gradient(xk)
+            d_k = -f.gradient(x_k)
         else :
-            d_k = x_j - xk
-        tk = PB.projectedBacktrackingSearch(f, P, xk, d_k)
-        xk = P.project(xk+ tk*d_k)
-        eps_check = np.linalg.norm(xk - P.project(xk - f.gradient(xk)))
-        diff = np.sqrt(np.linalg.norm(xk - P.project(xk - f.gradient(xk))))
+            d_k = x_j - x_k
+        tk = PB.projectedBacktrackingSearch(f, P, x_k, d_k)
+        x_k = P.project(x_k+ tk*d_k)
+        eps_check = np.linalg.norm(x_k - P.project(x_k - f.gradient(x_k)))
+        diff = np.sqrt(np.linalg.norm(x_k - P.project(x_k - f.gradient(x_k))))
         eta_k = np.min((0.5, diff)) * eps_check
     # INCOMPLETE CODE ENDS
     if verbose:
-        gradx = f.gradient(xk)
-        stationarity = np.linalg.norm(xk - P.project(xk - gradx))
+        gradx = f.gradient(x_k)
+        stationarity = np.linalg.norm(x_k - P.project(x_k - gradx))
         print('projectedInexactNewtonCG terminated after ', countIter, ' steps with stationarity =', np.linalg.norm(stationarity))
 
-    return xk
+    return x_k
 
