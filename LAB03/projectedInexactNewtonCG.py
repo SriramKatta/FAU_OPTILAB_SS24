@@ -49,15 +49,44 @@ def projectedInexactNewtonCG(f, P, x0: np.array, eps=1.0e-3, verbose=0):
     if verbose:
         print('Start projectedInexactNewtonCG...')
 
-    countIter = 0
-    xp = P.project(x0)
     # INCOMPLETE CODE STARTS
-
+    countIter = 0
+    xk = P.project(x0)
+    eps_check = np.linalg.norm(xk - P.project(xk - f.gradient(xk)))
+    diff = np.sqrt(np.linalg.norm(xk - P.project(xk - f.gradient(xk))))
+    eta_k = np.min((0.5, diff)) * eps_check
+    curvaturefail = False
+    while eps_check > eps:
+        countIter = countIter + 1
+        x_j = xk
+        r_j = f.gradient(xk)
+        d_j = -r_j
+        while np.linalg.norm(r_j) > eta_k:
+            d_a = PHA.projectedHessApprox(f, P, xk, d_j)
+            rho_j = d_j.T @ d_a
+            if rho_j <= eps * np.square(np.linalg.norm(d_j)):
+                curvaturefail = True
+                break
+            t_j = np.square(np.linalg.norm(r_j)) / rho_j
+            x_j = x_j + t_j * d_j
+            r_old = r_j
+            r_j = r_old + t_j * d_a
+            beta_j = np.square(np.linalg.norm(r_j)/np.linalg.norm(r_old))
+            d_j = -r_j + beta_j * d_j
+        if curvaturefail:
+            d_k = -f.gradient(xk)
+        else :
+            d_k = x_j - xk
+        tk = PB.projectedBacktrackingSearch(f, P, xk, d_k)
+        xk = P.project(xk+ tk*d_k)
+        eps_check = np.linalg.norm(xk - P.project(xk - f.gradient(xk)))
+        diff = np.sqrt(np.linalg.norm(xk - P.project(xk - f.gradient(xk))))
+        eta_k = np.min((0.5, diff)) * eps_check
     # INCOMPLETE CODE ENDS
     if verbose:
-        gradx = f.gradient(xp)
-        stationarity = np.linalg.norm(xp - P.project(xp - gradx))
+        gradx = f.gradient(xk)
+        stationarity = np.linalg.norm(xk - P.project(xk - gradx))
         print('projectedInexactNewtonCG terminated after ', countIter, ' steps with stationarity =', np.linalg.norm(stationarity))
 
-    return xp
+    return xk
 
