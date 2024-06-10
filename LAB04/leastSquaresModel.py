@@ -65,8 +65,6 @@ class leastSquaresModel:
         for i in range(self.N):
             grad = self.model.parameterGradient(self.xData[:, i].reshape(self.n, 1))
             myJacobian[i,:] = grad.T
-
-
         # INCOMPLETE CODE ENDS
 
         return myJacobian
