@@ -62,6 +62,9 @@ def BFGSDescent(f, x0: np.array, eps=1.0e-3, verbose=0):
         xk = xk + tk*dk
         if del_gk.T @ del_xk <= 0 :
             bk = E
+        else:
+            rk = del_xk - Bk @ del_gk
+            Bk += (rk @ del_xk.T + del_xk @ rk.T)/(del_gk.T @ del_xk) - (del_xk @ del_xk.T)*(rk.T @ del_gk)/np.square(del_gk.T @ del_xk)
 
     # INCOMPLETE CODE ENDS
     if verbose:
