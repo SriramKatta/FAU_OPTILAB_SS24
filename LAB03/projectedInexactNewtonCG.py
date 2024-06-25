@@ -53,8 +53,8 @@ def projectedInexactNewtonCG(f, P, x0: np.array, eps=1.0e-3, verbose=0):
     countIter = 0
     xk = P.project(x0)
     eps_check = np.linalg.norm(xk - P.project(xk - f.gradient(xk)))
-    diff = np.sqrt(np.linalg.norm(xk - P.project(xk - f.gradient(xk))))
-    eta_k = np.min((0.5, diff)) * eps_check
+    diffnorm = np.sqrt(np.linalg.norm(xk - P.project(xk - f.gradient(xk))))
+    eta_k = np.min((0.5, diffnorm)) * eps_check
     curvaturefail = False
     while eps_check > eps:
         countIter = countIter + 1
@@ -80,8 +80,8 @@ def projectedInexactNewtonCG(f, P, x0: np.array, eps=1.0e-3, verbose=0):
         tk = PB.projectedBacktrackingSearch(f, P, xk, d_k)
         xk = P.project(xk+ tk*d_k)
         eps_check = np.linalg.norm(xk - P.project(xk - f.gradient(xk)))
-        diff = np.sqrt(np.linalg.norm(xk - P.project(xk - f.gradient(xk))))
-        eta_k = np.min((0.5, diff)) * eps_check
+        diffnorm = np.sqrt(np.linalg.norm(xk - P.project(xk - f.gradient(xk))))
+        eta_k = np.min((0.5, diffnorm)) * eps_check
     # INCOMPLETE CODE ENDS
     if verbose:
         gradx = f.gradient(xk)
