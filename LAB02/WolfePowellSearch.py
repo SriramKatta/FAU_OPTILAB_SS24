@@ -83,7 +83,7 @@ def WolfePowellSearch(f, x: np.array, d: np.array, sigma=1.0e-3, rho=1.0e-2, ver
     if gradx.T @ d >= 0:
         raise TypeError('descent direction check failed!')
     
-    t = 1    
+    t = 1  
     if WP1(f.objective(x+t*d), t) == False:
         t = t/2
         while WP1(f.objective(x + t*d), t) == False:
