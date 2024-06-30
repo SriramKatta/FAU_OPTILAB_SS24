@@ -47,17 +47,15 @@
 
 import numpy as np
 
-
 def matrnr():
     # set your matriculation number here
-    matrnr = 23322375
+    matrnr = 23356687
     return matrnr
 
-
-def WolfePowellSearch(f, x: np.array, d: np.array, sigma=1.0e-3, rho=1.0e-2, verbose=0):
-    fx = f.objective(x)
-    gradx = f.gradient(x)
-    descent = gradx.T @ d
+def WolfePowellSearch(f, xk: np.array, dk: np.array, sigma=0.25, rho=0.5, verbose=0):
+    fx = f.objective(xk)
+    gradx = f.gradient(xk)
+    descent = gradx.T @ dk
 
     if descent >= 0:
         raise TypeError('descent direction check failed!')
@@ -71,50 +69,49 @@ def WolfePowellSearch(f, x: np.array, d: np.array, sigma=1.0e-3, rho=1.0e-2, ver
     if verbose:
         print('Start WolfePowellSearch...')
 
-    def WP1(ft, s):
-        isWP1 = ft <= fx + s*sigma*descent
-        return isWP1
+    def W1(t):
+        xt = xk + t * dk
+        return f.objective(xt) <= fx + t * sigma * descent
 
-    def WP2(gradft: np.array):
-        isWP2 = gradft.T @ d >= rho*descent
-        return isWP2
+    def W2(t):
+        xt = xk + t * dk
+        return f.gradient(xt).T @ dk >= rho * descent
 
-    # INCOMPLETE CODE STARTS
-    if gradx.T @ d >= 0:
-        raise TypeError('descent direction check failed!')
-    
-    t = 1  
-    if WP1(f.objective(x+t*d), t) == False:
-        t = t/2
-        while WP1(f.objective(x + t*d), t) == False:
-            t = t/2
+    t = 1.0
+
+    # Backtracking
+    if not W1(t):
+        t *= 0.5
+        while not W1(t):
+            t *= 0.5
         t_minus = t
-        t_plus = 2*t
-    elif WP2(f.gradient(x + t*d)) == True:
-        t_star = t
-        return t_star
-    else :
-        t = 2*t
-        while WP1(f.objective(x+t*d), t) == True:
-            t = 2*t
-        t_minus = t/2
+        t_plus = 2 * t
+    # Fronttracking
+    elif W2(t):
+        return t
+    else:
+        t *= 2
+        while W1(t):
+            t *= 2
+        t_minus = 0.5 * t
         t_plus = t
 
     t = t_minus
-    while WP2(f.gradient(x + t*d)) == False:
-        t = (t_minus + t_plus)/2
-        if WP1(f.objective(x + t*d),t) == True:
+
+    # Refining
+    while not W2(t):
+        t = (t_minus + t_plus) / 2
+        if W1(t):
             t_minus = t
         else:
             t_plus = t
-    t_star = t_minus
-    # INCOMPLETE CODE ENDS
 
     if verbose:
-        xt = x + t * d
+        xt = xk + t * dk
         fxt = f.objective(xt)
         gradxt = f.gradient(xt)
         print('WolfePowellSearch terminated with t=', t)
-        print('Wolfe-Powell: ', fxt, '<=', fx+t*sigma*descent, ' and ', gradxt.T @ d, '>=', rho*descent)
+        print('Wolfe-Powell: ', fxt, '<=', fx + t * sigma * descent, ' and ', gradxt.T @ dk, '>=', rho * descent)
 
-    return t_star
+    return t
+

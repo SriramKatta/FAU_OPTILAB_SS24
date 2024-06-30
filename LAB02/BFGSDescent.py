@@ -29,12 +29,10 @@
 import numpy as np
 import WolfePowellSearch as WP
 
-
 def matrnr():
     # set your matriculation number here
-    matrnr = 23322375
+    matrnr = 23356687
     return matrnr
-
 
 def BFGSDescent(f, x0: np.array, eps=1.0e-3, verbose=0):
     if eps <= 0:
@@ -46,30 +44,40 @@ def BFGSDescent(f, x0: np.array, eps=1.0e-3, verbose=0):
     countIter = 0
     xk = x0
     n = x0.shape[0]
-    E = np.eye(n)
-    Bk = E
-    # INCOMPLETE CODE STARTS
+    Bk = np.eye(n)  # Initialize Bk as identity matrix
+    
     while np.linalg.norm(f.gradient(xk)) > eps:
-        countIter = countIter + 1
         gradxk = f.gradient(xk)
         dk = -Bk @ gradxk
+        
+        # Descent direction check
         if gradxk.T @ dk >= 0:
             dk = -gradxk
-            Bk = E
-        tk = WP.WolfePowellSearch(f,xk, dk)
-        del_gk = f.gradient(xk + tk*dk) - gradxk
-        del_xk = tk * dk
-        xk = xk + tk*dk
-        if del_gk.T @ del_xk <= 0 :
-            Bk = E
-        else:
-            rk = del_xk - Bk @ del_gk
-            Bk += (rk @ del_xk.T + del_xk @ rk.T)/(del_gk.T @ del_xk) - (del_xk @ del_xk.T)*(rk.T @ del_gk)/np.square(del_gk.T @ del_xk)
+            Bk = np.eye(n)  # Reset Bk to identity matrix
+        
+        tk = WP.WolfePowellSearch(f, xk, dk)
+        
+        xk_new = xk + tk * dk
+        gradxk_new = f.gradient(xk_new)
+        
+        deltaxk = xk_new - xk
+        deltagk = gradxk_new - gradxk
+        
+        # BFGS update
+        if deltagk.T @ deltaxk > 0:
+            Bk = Bk + (deltaxk @ deltaxk.T) / (deltaxk.T @ deltagk) - (Bk @ deltagk @ deltagk.T @ Bk) / (deltagk.T @ Bk @ deltagk)
+        
+        xk = xk_new
+        countIter += 1
 
-    # INCOMPLETE CODE ENDS
+        if countIter >= 30:
+            print("Warning: Maximum iterations exceeded. Switching to steepest descent-like steps.")
+            dk = -gradxk  # Switch to steepest descent
+            Bk = np.eye(n)  # Reset Bk to identity matrix
+
     if verbose:
-        gradx = f.gradient(xk)
-        print('BFGSDescent terminated after ', countIter, ' steps with norm of gradient =', np.linalg.norm(gradx), 'and the inverse BFGS matrix is')
+        print('BFGSDescent terminated after', countIter, 'steps with norm of gradient =', np.linalg.norm(f.gradient(xk)), 'and the inverse BFGS matrix is')
         print(Bk)
 
     return xk
+
