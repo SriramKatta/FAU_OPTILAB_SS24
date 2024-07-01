@@ -43,7 +43,7 @@ import numpy as np
 
 def matrnr():
     # set your matriculation number here
-    matrnr = 23322375
+    matrnr = 0
     return matrnr
 
 
@@ -57,9 +57,15 @@ class boxObjective:
         self.bb = bb
 
     def isFeasible(self, x: np.array):
-        aboveAA = np.alltrue(np.greater_equal(x, self.aa))
-        belowBB = np.alltrue(np.less_equal(x, self.bb))
-        return np.alltrue([aboveAA, belowBB])
+        n = x.shape[0]
+        for i in range(n):
+            if x[i, 0] < self.aa[i, 0]:
+                return False
+
+            if x[i, 0] > self.bb[i, 0]:
+                return False
+        return True
+
 
     def objective(self, x: np.array):
         if self.isFeasible(x):
