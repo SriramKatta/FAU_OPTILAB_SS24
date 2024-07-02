@@ -39,10 +39,10 @@ def matrnr():
     return matrnr
 
 
-def projectedBacktrackingSearch(f, P, x: np.array, d: np.array, sigma=1.0e-4, verbose=0):
-    xp = P.project(x)
+def projectedBacktrackingSearch(f, P, xk: np.array, dk: np.array, sigma=1.0e-4, verbose=0):
+    xp = P.project(xk)
     gradx = f.gradient(xp)
-    decrease = gradx.T @ d
+    decrease = gradx.T @ dk
 
     if decrease >= 0:
         raise TypeError('descent direction check failed!')
@@ -55,8 +55,8 @@ def projectedBacktrackingSearch(f, P, x: np.array, d: np.array, sigma=1.0e-4, ve
 
     # INCOMPLETE CODE STARTS
     def W1(t):
-        isW1t = f.objective(P.project(x+t*d)) <= \
-            f.objective(x) - (sigma/t) * np.square(np.linalg.norm(x - P.project(x - t*f.gradient(x))))
+        isW1t = f.objective(P.project(xk+t*dk)) <= \
+            f.objective(xk) - (sigma/t) * np.square(np.linalg.norm(xk - P.project(xk - t*f.gradient(xk))))
         return isW1t
         
     beta = 0.5
