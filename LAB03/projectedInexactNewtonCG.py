@@ -60,6 +60,7 @@ def projectedInexactNewtonCG(f, P, x0: np.array, eps=1.0e-3, verbose=0):
         x_j = xk.copy()
         r_j = f.gradient(xk).copy()
         d_j = -r_j.copy()
+        innerloopcount=0
         while np.linalg.norm(r_j) > eta_k:
             d_a = PHA.projectedHessApprox(f, P, xk, d_j)
             rho_j = d_j.T @ d_a
@@ -72,7 +73,8 @@ def projectedInexactNewtonCG(f, P, x0: np.array, eps=1.0e-3, verbose=0):
             r_j = r_old + t_j * d_a
             beta_j = np.square(np.linalg.norm(r_j)/np.linalg.norm(r_old))
             d_j = -r_j + beta_j * d_j
-        if curvaturefail and (countIter == 0):
+            innerloopcount += 1
+        if curvaturefail and (innerloopcount == 0):
             d_k = -f.gradient(xk)
         else :
             d_k = x_j - xk
