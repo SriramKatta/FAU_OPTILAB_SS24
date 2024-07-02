@@ -58,6 +58,7 @@ def projectedInexactNewtonCG(f, P, x0: np.array, eps=1.0e-3, verbose=0):
     curvaturefail = False
     while eps_check > eps:
         x_j = xk.copy()
+        x_j_updated = False
         r_j = f.gradient(xk).copy()
         d_j = -r_j.copy()
         while np.linalg.norm(r_j) > eta_k:
@@ -68,11 +69,12 @@ def projectedInexactNewtonCG(f, P, x0: np.array, eps=1.0e-3, verbose=0):
                 break
             t_j = np.square(np.linalg.norm(r_j)) / rho_j
             x_j = x_j + t_j * d_j
+            x_j_updated = True
             r_old = r_j
             r_j = r_old + t_j * d_a
             beta_j = np.square(np.linalg.norm(r_j)/np.linalg.norm(r_old))
             d_j = -r_j + beta_j * d_j
-        if curvaturefail and (countIter == 0):
+        if curvaturefail and not x_j_updated:
             d_k = -f.gradient(xk)
         else :
             d_k = x_j - xk
